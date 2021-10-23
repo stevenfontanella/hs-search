@@ -19,8 +19,11 @@ opts = Options
 parser = info (opts <**> helper) (fullDesc <> progDesc "search for a symbol")
 
 main = do
-  opts <- execParser parser
-  print opts
+  Options symbol path <- execParser parser
+  files <- getFilesUnderFolderOrFile path
+  symbs <- mapM symsFromFile files
+  print symbs
+  pure ()
   -- mod <- parseFromFile =<< getLine
 
   -- let syms = symsFromModule mod

@@ -1,5 +1,7 @@
 module Control.Parse where
 
+import Util
+
 import Data.Table (Table)
 import qualified Data.Table as T
 
@@ -72,8 +74,11 @@ parseFromString str = case parseModule str of
   ParseOk _         -> Left "parseFromString: Unexpected parse result"
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
 
-parseFromFile :: String -> IO Mod
+parseFromFile :: FilePath -> IO Mod
 parseFromFile = fmap (either error id . parseFromString) . readFile
 
 symsFromModule :: Module info -> Table PName info
 symsFromModule = foldMapMod (flip T.singleton)
+
+symsFromFile :: FilePath -> IO SymTable
+symsFromFile = symsFromModule <.> parseFromFile

@@ -6,7 +6,9 @@ import System.FilePath
 
 import Debug.Trace
 
-concatMapM :: (Traversable t, Applicative f) => (a1 -> f [a2]) -> t a1 -> f [a2]
+(<.>) f = (fmap f .)
+
+concatMapM :: (Traversable t, Applicative f) => (a -> f [b]) -> t a -> f [b]
 concatMapM f = fmap concat . traverse f
 
 ifM :: (Monad m) => m Bool -> m a -> m a -> m a
@@ -29,4 +31,9 @@ getFilesRec path = do
     (dirs, files) <- partitionM doesFileExist children
     rec <- concatMapM getFilesRec dirs
     pure $ files ++ rec
-    
+
+getFilesUnderFolderOrFile :: FilePath -> IO [FilePath]
+getFilesUnderFolderOrFile path =
+    ifM (doesDirectoryExist path)
+      (getFilesRec path)
+      (pure [path])
