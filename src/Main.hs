@@ -1,9 +1,11 @@
 import Debug.Trace
-import Data.Map
+import Data.Map (Map)
+import qualified Data.Map as M
 
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 import Language.Haskell.Exts.SrcLoc
+import GHC.Base (Semigroup)
 
 -- runParser :: DynFlags -> String -> P a -> ParseResult a
 -- runParser flags str parser = unP parser parseState
@@ -22,6 +24,25 @@ type Name = String
 newtype Table = Table
  { toMap :: Map Main.Name [SrcSpan]
  } deriving (Show)
+
+addName :: Main.Name -> SrcSpan -> Table -> Table
+addName name span = (Table (M.singleton name [span]) <>)
+-- addName name span = Table . M.alter (Just . f) name . toMap
+--   where
+--     f Nothing = [span]
+--     f (Just spans) = span:spans
+
+instance Semigroup Table where
+  Table a <> Table b = Table $ M.unionWith (++) a b
+
+instance Monoid Table where
+  mempty = Table mempty
+
+(.:) :: (a -> b) -> (c -> d -> a) -> c -> d -> b
+(.:) = fmap fmap fmap
+
+singleton :: Main.Name -> SrcSpan -> Table
+singleton name span = Table $ M.singleton name [span]
 
 -- data Loc = Loc
 --   { locLine :: !Int
@@ -45,6 +66,7 @@ n (Symbol a s) = (a, s)
 foldMapDecl :: Monoid m => (a -> Main.Name -> m) -> Decl a -> m
 foldMapDecl acc decl = case decl of
   FunBind _ matches -> mconcat [uncurry acc (n fnName) | (Match a fnName pats rhs mbBinds) <- matches]
+  _ -> mempty
   -- big TODO
   -- TypeDecl a dh ty -> _
   -- TypeFamDecl a kdh m_rs m_ii -> _
@@ -93,6 +115,8 @@ declToDef decl = trace "\n" $ traceShow decl $ case decl of
   FunBind{}  -> Def
   TypeDecl{} -> Def
   DataDecl{} -> Def
+
+a = foldMapDecl $ flip singleton
 
 parseFromString :: String -> Either Failure (Parsed info)
 parseFromString str = case parseModule str of
