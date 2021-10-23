@@ -3,6 +3,8 @@ dependencies:
 - haskell-src-exts
 - containers
 - optparse-applicative
+- directory
+- filepath
 
 executables:
   hs-search:

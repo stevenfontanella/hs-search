@@ -2,6 +2,7 @@ import Data.Maybe
 
 import Control.Parse
 import qualified Data.Table as T
+import Util
 
 import Options.Applicative
 
