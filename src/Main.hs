@@ -21,27 +21,27 @@ data Parsed info = Program [Def info]
   deriving (Show)
 
 type Name = String
-newtype Table = Table
- { toMap :: Map Main.Name [SrcSpan]
+newtype Table s = Table
+ { toMap :: Map Main.Name [s]
  } deriving (Show)
 
-addName :: Main.Name -> SrcSpan -> Table -> Table
+addName :: Main.Name -> s -> Table s -> Table s
 addName name span = (Table (M.singleton name [span]) <>)
 -- addName name span = Table . M.alter (Just . f) name . toMap
 --   where
 --     f Nothing = [span]
 --     f (Just spans) = span:spans
 
-instance Semigroup Table where
+instance Semigroup (Table s) where
   Table a <> Table b = Table $ M.unionWith (++) a b
 
-instance Monoid Table where
+instance Monoid (Table s) where
   mempty = Table mempty
 
 (.:) :: (a -> b) -> (c -> d -> a) -> c -> d -> b
 (.:) = fmap fmap fmap
 
-singleton :: Main.Name -> SrcSpan -> Table
+singleton :: Main.Name -> s -> Table s
 singleton name span = Table $ M.singleton name [span]
 
 -- data Loc = Loc
@@ -108,27 +108,27 @@ foldMapMod :: Monoid m => (a -> Main.Name -> m) -> Module a -> m
 foldMapMod acc (Module _ _ _ _ decls) = mconcat $ foldMapDecl acc <$> decls
 foldMapMod _ _ = error "foldMapMod: Not a module"
 
-declToDef :: Decl SrcSpanInfo -> Def info
-declToDef decl = trace "\n" $ traceShow decl $ case decl of
-  PatBind{}  -> Def
-  TypeSig{}  -> Def
-  FunBind{}  -> Def
-  TypeDecl{} -> Def
-  DataDecl{} -> Def
+a = foldMapMod $ flip singleton
 
-a = foldMapDecl $ flip singleton
+type Mod = Module SrcSpanInfo
 
-parseFromString :: String -> Either Failure (Parsed info)
+parseFromString :: String -> Either Failure Mod
+-- TODO parseModuleWithMode to preserve filename
 parseFromString str = case parseModule str of
-  ParseOk (Module _ mbHead pragma imports decls) -> Right $ Program $ fmap declToDef decls
+  ParseOk m@(Module _ mbHead pragma imports decls) -> Right m
   ParseOk _         -> Left "parseFromString: Unexpected parse result"
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
 
-parseFromFile :: String -> IO (Parsed info)
+parseFromFile :: String -> IO Mod
 parseFromFile = fmap (either error id) . fmap parseFromString . readFile
 
 main = do
-  fname <- getLine
+  mod <- parseFromFile =<< getLine
+
+  let b = a mod
+  print b
   -- putStrLn contents
-  print =<< parseFromFile fname
+
+  pure ()
+  -- print =<< parseFromFile fname
   -- putStrLn contents
