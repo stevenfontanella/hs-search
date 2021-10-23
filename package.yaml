@@ -2,6 +2,7 @@ dependencies:
 - base >= 4.7 && < 5
 - haskell-src-exts
 - containers
+- optparse-applicative
 
 executables:
   hs-search:
