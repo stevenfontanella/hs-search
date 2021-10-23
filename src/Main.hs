@@ -1,4 +1,5 @@
-import Data.Table
+import Data.Table (Table)
+import qualified Data.Table as T
 
 import Debug.Trace
 
@@ -21,6 +22,8 @@ data Parsed info = Program [Def info]
   deriving (Show)
 
 type Name = String
+
+type SymTable = Table Main.Name SrcSpanInfo
 
 
 -- addName name span = Table . M.alter (Just . f) name . toMap
@@ -92,8 +95,6 @@ foldMapMod :: Monoid m => (a -> Main.Name -> m) -> Module a -> m
 foldMapMod acc (Module _ _ _ _ decls) = mconcat $ foldMapDecl acc <$> decls
 foldMapMod _ _ = error "foldMapMod: Not a module"
 
-a = foldMapMod $ flip singleton
-
 type Mod = Module SrcSpanInfo
 
 parseFromString :: String -> Either Failure Mod
@@ -104,13 +105,17 @@ parseFromString str = case parseModule str of
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
 
 parseFromFile :: String -> IO Mod
-parseFromFile = fmap (either error id) . fmap parseFromString . readFile
+parseFromFile = fmap (either error id . parseFromString) . readFile
+
+symsFromModule :: Module info -> Table Main.Name info
+symsFromModule = foldMapMod (flip T.singleton)
 
 main = do
   mod <- parseFromFile =<< getLine
 
-  let b = a mod
-  print b
+  let syms = symsFromModule mod
+  let fibLocs = syms T.!? "fib"
+  putStrLn $ unlines $ map show fibLocs
   -- putStrLn contents
 
   pure ()
