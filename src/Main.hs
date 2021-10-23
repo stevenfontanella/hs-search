@@ -1,6 +1,6 @@
+import Data.Table
+
 import Debug.Trace
-import Data.Map (Map)
-import qualified Data.Map as M
 
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
@@ -21,28 +21,12 @@ data Parsed info = Program [Def info]
   deriving (Show)
 
 type Name = String
-newtype Table s = Table
- { toMap :: Map Main.Name [s]
- } deriving (Show)
 
-addName :: Main.Name -> s -> Table s -> Table s
-addName name span = (Table (M.singleton name [span]) <>)
+
 -- addName name span = Table . M.alter (Just . f) name . toMap
 --   where
 --     f Nothing = [span]
 --     f (Just spans) = span:spans
-
-instance Semigroup (Table s) where
-  Table a <> Table b = Table $ M.unionWith (++) a b
-
-instance Monoid (Table s) where
-  mempty = Table mempty
-
-(.:) :: (a -> b) -> (c -> d -> a) -> c -> d -> b
-(.:) = fmap fmap fmap
-
-singleton :: Main.Name -> s -> Table s
-singleton name span = Table $ M.singleton name [span]
 
 -- data Loc = Loc
 --   { locLine :: !Int
