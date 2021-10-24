@@ -4,6 +4,7 @@ import Util
 import Lib.Format
 
 import Data.Maybe
+import System.FilePath
 
 import Options.Applicative hiding (Mod)
 
@@ -32,7 +33,7 @@ results toFind paths = do
 
 main = do
   Options symbol path <- execParser parser
-  files <- getFilesUnderFolderOrFile path
+  files <- filter ((== ".hs") . takeExtension)<$> getFilesUnderFolderOrFile path
 
   r <- results symbol files
   formatLn r

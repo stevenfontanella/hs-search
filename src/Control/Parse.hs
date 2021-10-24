@@ -73,15 +73,15 @@ foldMapMod _ _ = error "foldMapMod: Not a module"
 
 type Mod = Module SrcSpanInfo
 
-parseFromString :: String -> Either Failure Mod
+parseFromString :: FilePath -> String -> Either Failure Mod
 -- TODO parseModuleWithMode to preserve filename
-parseFromString str = case parseModule str of
+parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilename=fname} str of
   ParseOk m@(Module _ mbHead pragma imports decls) -> Right m
   ParseOk _         -> Left "parseFromString: Unexpected parse result"
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
 
 parseFromFile :: FilePath -> IO Mod
-parseFromFile = fmap (either error id . parseFromString) . readFile
+parseFromFile path = (either error id . parseFromString path) <$> readFile path
 
 symsFromModule :: Module info -> Table PName info
 symsFromModule = foldMapMod (flip T.singleton)
