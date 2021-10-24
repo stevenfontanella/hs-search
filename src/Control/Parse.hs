@@ -1,9 +1,17 @@
-module Control.Parse where
+module Control.Parse (
+    foldMapMod
+  , parseFromString
+  , parseFromFile
+  , symsFromModule
+  , symsFromFile
+  , Mod
+  , Module
+) where
 
 import Util
 
-import Data.Table (Table)
-import qualified Data.Table as T
+import Data.SymTable
+import qualified Data.SymTable as T
 
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
@@ -13,8 +21,6 @@ import GHC.Base (Semigroup)
 type Failure = String
 type PName = String
 type HName = Language.Haskell.Exts.Syntax.Name
-
-type SymTable = Table PName SrcSpanInfo
 
 n :: HName a -> (a, PName)
 n (Ident a s) = (a, s)

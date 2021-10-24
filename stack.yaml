@@ -40,7 +40,9 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps:
+  - isocline-1.0.5@sha256:ea9cbf9690cf3e252afd56c0e766678dc5f3aab9259a2ee6ec820a598fead989,2420
+
 
 
 # Override default flag values for local packages and extra-deps

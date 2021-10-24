@@ -1,10 +1,13 @@
-import Data.Maybe
-
 import Control.Parse
 import qualified Data.Table as T
 import Util
+import Lib.Format
 
-import Options.Applicative
+import Data.Maybe
+
+import Options.Applicative hiding (Mod)
+
+import Data.SymTable
 
 data Options = Options
  { symbol :: String
@@ -18,16 +21,18 @@ opts = Options
 
 parser = info (opts <**> helper) (fullDesc <> progDesc "search for a symbol")
 
+findOne :: String -> FilePath -> Mod -> SymTable
+findOne toFind path = foldMapMod 
+  (\info name -> if name == toFind then singleton path info else mempty) 
+
+results :: String -> [FilePath] -> IO SymTable
+results toFind paths = do
+  mods <- mapM parseFromFile paths
+  pure $ mconcat $ zipWith (findOne toFind) paths mods
+
 main = do
   Options symbol path <- execParser parser
   files <- getFilesUnderFolderOrFile path
-  symbs <- mapM symsFromFile files
-  print symbs
-  pure ()
-  -- mod <- parseFromFile =<< getLine
 
-  -- let syms = symsFromModule mod
-  -- let fibLocs = syms T.!? "fib"
-  -- putStrLn $ unlines $ map show fibLocs
-
-  -- pure ()
+  r <- results symbol files
+  formatLn r

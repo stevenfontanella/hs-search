@@ -4,6 +4,7 @@ module Data.Table (
   , singleton
   , lookup
   , (!?)
+  , toList
 ) where
 
 import Prelude hiding (lookup)
@@ -12,7 +13,6 @@ import Data.Maybe
 import Data.Map (Map)
 import qualified Data.Map as M
 
-type Name = String
 newtype Table n s = Table
  { toMap :: Map n [s]
  } deriving (Show)
@@ -36,3 +36,9 @@ lookup n = fromMaybe [] . M.lookup n . toMap
 
 (!?) :: Ord n => Table n s -> n -> [s]
 (!?) = flip lookup
+
+-- toList :: Table n s -> [(n, s)]
+-- toList = concatMap (\(k, vs) -> fmap (k,) vs) . M.toList . toMap
+
+toList :: Table n s -> [(n, [s])]
+toList = M.toList . toMap

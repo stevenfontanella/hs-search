@@ -5,6 +5,7 @@ dependencies:
 - optparse-applicative
 - directory
 - filepath
+- isocline
 
 executables:
   hs-search:
