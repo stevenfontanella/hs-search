@@ -29,8 +29,16 @@ foldMapDecl :: Monoid m => (a -> PName -> m) -> Decl a -> m
 foldMapDecl acc decl = case decl of
   FunBind _ matches -> mconcat [addName fnName | (Match a fnName pats rhs mbBinds) <- matches]
   PatBind _ (PVar _ name) rhs m_bi -> addName name
+  DataDecl _ don m_con head consts des -> handleDeclHead head
   _ -> mempty
-  where addName = uncurry acc . n
+  where
+    handleDeclHead head = case head of
+      DHead a na -> addName na
+      DHInfix a tvb na -> addName na
+      DHParen a dh -> handleDeclHead dh
+      DHApp a dh tvb -> mempty
+
+    addName = uncurry acc . n
   -- big TODO
   -- TypeDecl a dh ty -> _
   -- TypeFamDecl a kdh m_rs m_ii -> _
@@ -50,8 +58,6 @@ foldMapDecl acc decl = case decl of
   -- TSpliceDecl a exp -> _
   -- TypeSig a nas ty -> _
   -- PatSynSig a nas m_tvbs m_con m_tvb's m_con' ty -> _
-  -- FunBind a mas -> _
-  -- PatBind a pat rhs m_bi -> _
   -- PatSyn a pat pat' psd -> _
   -- ForImp a cc m_sa m_s na ty -> _
   -- ForExp a cc m_s na ty -> _

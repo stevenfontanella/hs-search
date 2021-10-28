@@ -15,7 +15,7 @@ import qualified Data.Map as M
 
 newtype Table n s = Table
  { toMap :: Map n [s]
- } deriving (Show)
+ } deriving (Show, Eq)
 
 add :: Ord n => n -> s -> Table n s -> Table n s
 add name span = (<>) $ singleton name span

@@ -40,8 +40,10 @@ putStderrLn = hPutStrLn stderr
 
 results :: String -> [FilePath] -> IO SymTable
 results toFind paths = do
-  ~(errs, mods) <- partitionEithers <$> mapM parseFromFile paths
+  ~(errs, paths_mods) <- partitionEithers <$> mapM (\path -> fmap (path,) <$> parseFromFile path) paths
   mapM_ putStderrLn errs
+
+  let (paths, mods) = unzip paths_mods
   -- pure $ mconcat $ withStrategy (parList rpar) $ zipWith (findOne toFind) paths mods
   pure $ mconcat $ zipWith (findOne toFind) paths mods
 
