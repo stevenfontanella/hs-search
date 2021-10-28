@@ -16,7 +16,6 @@ import qualified Data.SymTable as T
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 import Language.Haskell.Exts.SrcLoc
-import GHC.Base (Semigroup)
 
 type Failure = String
 type PName = String
@@ -28,8 +27,10 @@ n (Symbol a s) = (a, s)
 
 foldMapDecl :: Monoid m => (a -> PName -> m) -> Decl a -> m
 foldMapDecl acc decl = case decl of
-  FunBind _ matches -> mconcat [uncurry acc (n fnName) | (Match a fnName pats rhs mbBinds) <- matches]
+  FunBind _ matches -> mconcat [addName fnName | (Match a fnName pats rhs mbBinds) <- matches]
+  PatBind _ (PVar _ name) rhs m_bi -> addName name
   _ -> mempty
+  where addName = uncurry acc . n
   -- big TODO
   -- TypeDecl a dh ty -> _
   -- TypeFamDecl a kdh m_rs m_ii -> _
