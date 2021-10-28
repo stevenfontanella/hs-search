@@ -9,12 +9,18 @@ import Util
 
 import Control.Monad
 import Control.Exception (assert)
+import Data.Char (isSpace)
 
-import System.Console.Isocline
+import qualified System.Console.Isocline as Iso
 import Language.Haskell.Exts.SrcLoc
+
+import Debug.Trace
 
 format :: SymTable -> IO String
 format = concatMapM (uncurry fmtFileResult) . toList
+
+trimEnd :: String -> String
+trimEnd = reverse . dropWhile isSpace . reverse
 
 fmtFileResult :: FilePath -> [SrcSpanInfo] -> IO String
 fmtFileResult path spans = do
@@ -31,6 +37,9 @@ fmtFileResult path spans = do
 
 formatLn :: SymTable -> IO ()
 formatLn = printFormatted <=< format
+
+putFmtLn "" = putStrLn ""
+putFmtLn x = Iso.putFmtLn x
 
 printFormatted :: String -> IO ()
 printFormatted = putFmtLn

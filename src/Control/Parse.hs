@@ -80,11 +80,11 @@ parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilen
   ParseOk _         -> Left "parseFromString: Unexpected parse result"
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
 
-parseFromFile :: FilePath -> IO Mod
-parseFromFile path = (either error id . parseFromString path) <$> readFile path
+parseFromFile :: FilePath -> IO (Either Failure Mod)
+parseFromFile path = parseFromString path <$> readFile path
 
 symsFromModule :: Module info -> Table PName info
 symsFromModule = foldMapMod (flip T.singleton)
 
-symsFromFile :: FilePath -> IO SymTable
-symsFromFile = symsFromModule <.> parseFromFile
+symsFromFile :: FilePath -> IO (Either Failure SymTable)
+symsFromFile = fmap symsFromModule <.> parseFromFile
