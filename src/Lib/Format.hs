@@ -38,8 +38,8 @@ fmtFileResult path spans = do
 formatLn :: SymTable -> IO ()
 formatLn = printFormatted <=< format
 
-putFmtLn "" = putStrLn ""
-putFmtLn x = Iso.putFmtLn x
+putFmt "" = pure ()
+putFmt x = Iso.putFmt x
 
 printFormatted :: String -> IO ()
-printFormatted = putFmtLn
+printFormatted = putFmt
