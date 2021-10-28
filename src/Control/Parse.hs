@@ -16,6 +16,8 @@ import qualified Data.SymTable as T
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 import Language.Haskell.Exts.SrcLoc
+import Language.Haskell.Exts.Extension
+import Language.Haskell.Exts (knownExtensions)
 
 type Failure = String
 type PName = String
@@ -80,9 +82,12 @@ foldMapMod _ _ = error "foldMapMod: Not a module"
 
 type Mod = Module SrcSpanInfo
 
+exts :: [Extension]
+exts = map EnableExtension [NamedFieldPuns, TupleSections]
+
 parseFromString :: FilePath -> String -> Either Failure Mod
 -- TODO parseModuleWithMode to preserve filename
-parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilename=fname} str of
+parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilename=fname, extensions=exts, baseLanguage=Haskell2010} str of
   ParseOk m@(Module _ mbHead pragma imports decls) -> Right m
   ParseOk _         -> Left "parseFromString: Unexpected parse result"
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
