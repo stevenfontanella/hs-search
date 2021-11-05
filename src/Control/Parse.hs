@@ -13,11 +13,16 @@ import Util
 import Data.SymTable
 import qualified Data.SymTable as T
 
+import Control.Exception
+import Control.DeepSeq
+
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 import Language.Haskell.Exts.SrcLoc
 import Language.Haskell.Exts.Extension
 import Language.Haskell.Exts (knownExtensions)
+
+import Debug.Trace
 
 type Failure = String
 type PName = String
@@ -94,7 +99,7 @@ foldMapMod _ _ = error "foldMapMod: Not a module"
 type Mod = Module SrcSpanInfo
 
 exts :: [Extension]
-exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP]
+exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP, RecordWildCards, ScopedTypeVariables, BangPatterns, MultiParamTypeClasses, ExistentialQuantification, GADTs]
 
 parseFromString :: FilePath -> String -> Either Failure Mod
 -- TODO parseModuleWithMode to preserve filename
@@ -104,7 +109,11 @@ parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilen
   ParseFailed loc s -> Left $ "parseFromString: " <> s <> " at " <> show loc
 
 parseFromFile :: FilePath -> IO (Either Failure Mod)
-parseFromFile path = parseFromString path <$> readFile path
+parseFromFile path = do
+  mybeContents <- try $ (evaluate . force) =<< readFile path :: IO (Either SomeException String)
+  case mybeContents of
+    Left e -> pure $ Left $ displayException e
+    Right content -> pure $ parseFromString path content
 
 symsFromModule :: Module info -> Table PName info
 symsFromModule = foldMapMod (flip T.singleton)

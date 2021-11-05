@@ -6,6 +6,7 @@ dependencies:
 - directory
 - filepath
 - isocline
+- deepseq
 
 executables:
   hs-search:

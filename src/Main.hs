@@ -39,6 +39,7 @@ main = do
   Options symbol path smartCase <- parseOpts
   files <- filter ((== ".hs") . takeExtension) <$> getFilesUnderFolderOrFile path
   let found target
+        -- | True = True
         | all isLower symbol
         , smartCase = target `eqInsensitive` symbol
 
