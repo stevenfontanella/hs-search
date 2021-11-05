@@ -94,7 +94,7 @@ foldMapMod _ _ = error "foldMapMod: Not a module"
 type Mod = Module SrcSpanInfo
 
 exts :: [Extension]
-exts = map EnableExtension [NamedFieldPuns, TupleSections]
+exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP]
 
 parseFromString :: FilePath -> String -> Either Failure Mod
 -- TODO parseModuleWithMode to preserve filename
