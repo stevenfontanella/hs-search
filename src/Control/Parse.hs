@@ -27,16 +27,19 @@ n :: HName a -> (a, PName)
 n (Ident a s) = (a, s)
 n (Symbol a s) = (a, s)
 
-conDeclName :: ConDecl a -> HName a
-conDeclName (ConDecl _ n _) = n
-conDeclName (InfixConDecl _ _ n _) = n
-conDeclName (RecDecl _ n fields) = n
+foldMapConDecl :: Monoid m => (a -> PName -> m) -> ConDecl a -> m
+foldMapConDecl acc conDecl = case conDecl of
+  ConDecl a na tys -> addName na
+  InfixConDecl a ty na ty' -> addName na
+  RecDecl a na fds -> addName na
+  where
+    addName = uncurry acc . n
 
 foldMapDecl :: Monoid m => (a -> PName -> m) -> Decl a -> m
 foldMapDecl acc decl = case decl of
   FunBind _ matches -> mconcat [addName fnName | (Match a fnName pats rhs mbBinds) <- matches]
   PatBind _ (PVar _ name) rhs m_bi -> addName name
-  DataDecl _ don m_con head consts des -> handleDeclHead head <> mconcat [addName $ conDeclName con | QualConDecl _ _ _ con <- consts]
+  DataDecl _ don m_con head consts des -> handleDeclHead head <> mconcat [foldMapConDecl acc con | QualConDecl _ _ _ con <- consts]
   _ -> mempty
   where
     handleDeclHead head = case head of
