@@ -99,7 +99,7 @@ foldMapMod _ _ = error "foldMapMod: Not a module"
 type Mod = Module SrcSpanInfo
 
 exts :: [Extension]
-exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP, RecordWildCards, ScopedTypeVariables, BangPatterns, MultiParamTypeClasses, ExistentialQuantification, GADTs]
+exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP, RecordWildCards, ScopedTypeVariables, BangPatterns, MultiParamTypeClasses, ExistentialQuantification, GADTs, LambdaCase, TemplateHaskell]
 
 parseFromString :: FilePath -> String -> Either Failure Mod
 -- TODO parseModuleWithMode to preserve filename
@@ -110,6 +110,7 @@ parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilen
 
 parseFromFile :: FilePath -> IO (Either Failure Mod)
 parseFromFile path = do
+  -- force lazy I/O
   mybeContents <- try $ (evaluate . force) =<< readFile path :: IO (Either SomeException String)
   case mybeContents of
     Left e -> pure $ Left $ displayException e
