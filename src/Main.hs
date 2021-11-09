@@ -36,10 +36,13 @@ results found paths = do
 
 main = do
   -- installHandler keyboardSignal (Catch $ exitImmediately ExitSuccess) Nothing
+  -- TODO: error if file/folder doesn't exists
+  --       ignore .stack-work
   Options symbol path smartCase <- parseOpts
   files <- filter ((== ".hs") . takeExtension) <$> getFilesUnderFolderOrFile path
   let found target
         -- | True = True
+        -- TODO: should check only alpha characters here
         | all isLower symbol
         , smartCase = target `eqInsensitive` symbol
 
