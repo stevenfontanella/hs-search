@@ -32,15 +32,12 @@ n :: HName a -> (a, PName)
 n (Ident a s) = (a, s)
 n (Symbol a s) = (a, s)
 
-mconcatMap :: Monoid b => (a -> b) -> [a] -> b
-mconcatMap f = mconcat . map f
-
 -- TODO: classes + instance declarations
 foldMapConDecl :: Monoid m => (a -> PName -> m) -> ConDecl a -> m
 foldMapConDecl acc conDecl = case conDecl of
   ConDecl a na tys -> addName na
   InfixConDecl a ty na ty' -> addName na
-  RecDecl a na fds -> addName na <> mconcat [mconcatMap addName names | FieldDecl _ names _ <- fds]
+  RecDecl a na fds -> addName na <> mconcat [foldMap addName names | FieldDecl _ names _ <- fds]
   where
     addName = uncurry acc . n
 
