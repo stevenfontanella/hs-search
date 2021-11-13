@@ -37,3 +37,6 @@ getFilesUnderFolderOrFile path =
     ifM (doesDirectoryExist path)
       (getFilesRec path)
       (pure [path])
+
+implies :: Bool -> Bool -> Bool
+implies x y = y || not x

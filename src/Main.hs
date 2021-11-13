@@ -6,7 +6,7 @@ import Lib.Options
 import Data.SymTable
 import Data.Function
 
-import Data.Char (toLower, isLower)
+import Data.Char (toLower, isLower, isAlpha)
 import Data.Either (partitionEithers)
 import System.FilePath
 import System.IO
@@ -42,8 +42,7 @@ main = do
   files <- filter ((== ".hs") . takeExtension) <$> getFilesUnderFolderOrFile path
   let found target
         -- | True = True
-        -- TODO: should check only alpha characters here
-        | all isLower symbol
+        | all (\c -> isAlpha c `implies` isLower c) symbol
         , smartCase = target `eqInsensitive` symbol
 
         | otherwise = target == symbol
