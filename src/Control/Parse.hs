@@ -100,7 +100,6 @@ exts :: [Extension]
 exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP, RecordWildCards, ScopedTypeVariables, BangPatterns, MultiParamTypeClasses, ExistentialQuantification, GADTs, LambdaCase, TemplateHaskell]
 
 parseFromString :: FilePath -> String -> Either Failure Mod
--- TODO parseModuleWithMode to preserve filename
 parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilename=fname, extensions=exts, baseLanguage=Haskell2010} str of
   ParseOk m@(Module _ mbHead pragma imports decls) -> Right m
   ParseOk _         -> Left "parseFromString: Unexpected parse result"

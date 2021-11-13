@@ -37,9 +37,15 @@ results found paths = do
 main = do
   -- installHandler keyboardSignal (Catch $ exitImmediately ExitSuccess) Nothing
   -- TODO: error if file/folder doesn't exists
-  --       ignore .stack-work
   Options symbol path smartCase <- parseOpts
-  files <- filter ((== ".hs") . takeExtension) <$> getFilesUnderFolderOrFile path
+
+  -- N.B. if we explicitly search inside a hidden directory, we allow the search to continue
+  -- however, the search will never traverse into a hidden directory
+  let shouldExclude f
+        | '.':_ <- takeFileName f = True
+        | otherwise = False
+
+  files <- filter ((== ".hs") . takeExtension) <$> getFilesUnderFolderOrFile shouldExclude path
   let found target
         -- | True = True
         | all (\c -> isAlpha c `implies` isLower c) symbol

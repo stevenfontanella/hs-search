@@ -3,7 +3,7 @@ module Util where
 import Control.Applicative
 import Control.Monad
 import System.Directory
-import System.FilePath
+import System.FilePath hiding ((<.>))
 
 import Debug.Trace
 
@@ -34,11 +34,11 @@ dfs neighbors yield curr = do
   succs <- neighbors curr
   liftA2 (++) (yield curr) $ concatMapM (dfs neighbors yield) succs
 
-getFilesUnderFolderOrFile :: FilePath -> IO [FilePath]
-getFilesUnderFolderOrFile = dfs succs yield
+getFilesUnderFolderOrFile :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
+getFilesUnderFolderOrFile exclude = dfs succs yield
   where
     succs path = ifM (doesDirectoryExist path)
-                     (map (path </>) <$> listDirectory path)
+                     (filter (not . exclude) <$> (map (path </>) <$> listDirectory path))
                      (pure [])
     yield path = ifM (doesFileExist path)
                      (pure [path])
