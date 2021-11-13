@@ -1,5 +1,6 @@
 module Util where
 
+import Control.Applicative
 import Control.Monad
 import System.Directory
 import System.FilePath
@@ -16,6 +17,9 @@ ifM mb then_ else_ = do
   b <- mb
   if b then then_ else else_
 
+guardM :: (Monad m, Alternative m) => m Bool -> m ()
+guardM mbool = guard =<< mbool
+
 -- falses, trues
 partitionM :: (Monad m) => (a -> m Bool) -> [a] -> m ([a], [a])
 partitionM select = foldM f ([], [])
@@ -25,18 +29,20 @@ partitionM select = foldM f ([], [])
         (pure (falses, x:trues))
         (pure (x:falses, trues))
 
-getFilesRec :: FilePath -> IO [FilePath]
-getFilesRec path = do
-    children <- map (path </>) <$> listDirectory path
-    (dirs, files) <- partitionM doesFileExist children
-    rec <- concatMapM getFilesRec dirs
-    pure $ files ++ rec
+dfs :: (Monad m) => (a -> m [a]) -> (a -> m [b]) -> a -> m [b]
+dfs neighbors yield curr = do
+  succs <- neighbors curr
+  liftA2 (++) (yield curr) $ concatMapM (dfs neighbors yield) succs
 
 getFilesUnderFolderOrFile :: FilePath -> IO [FilePath]
-getFilesUnderFolderOrFile path =
-    ifM (doesDirectoryExist path)
-      (getFilesRec path)
-      (pure [path])
+getFilesUnderFolderOrFile = dfs succs yield
+  where
+    succs path = ifM (doesDirectoryExist path)
+                     (map (path </>) <$> listDirectory path)
+                     (pure [])
+    yield path = ifM (doesFileExist path)
+                     (pure [path])
+                     (pure [])
 
 implies :: Bool -> Bool -> Bool
 implies x y = y || not x
