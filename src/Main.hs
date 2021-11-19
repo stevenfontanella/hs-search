@@ -16,7 +16,7 @@ import Debug.Trace
 findOne :: (String -> Bool) -> FilePath -> Mod -> SymTable
 findOne found path = foldMapMod $ \info name ->
   if found name
-    then singleton path info
+    then T.singleton path [info]
     else mempty
 
 putStderrLn :: String -> IO ()

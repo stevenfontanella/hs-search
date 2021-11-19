@@ -2,8 +2,6 @@ module Control.Parse (
     foldMapMod
   , parseFromString
   , parseFromFile
-  , symsFromModule
-  , symsFromFile
   , Mod
   , Module
 ) where
@@ -20,7 +18,6 @@ import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 import Language.Haskell.Exts.SrcLoc
 import Language.Haskell.Exts.Extension
-import Language.Haskell.Exts (knownExtensions)
 
 import Debug.Trace
 
@@ -112,9 +109,3 @@ parseFromFile path = do
   case mybeContents of
     Left e -> pure $ Left $ displayException e
     Right content -> pure $ parseFromString path content
-
-symsFromModule :: Module info -> Table PName info
-symsFromModule = foldMapMod (flip T.singleton)
-
-symsFromFile :: FilePath -> IO (Either Failure SymTable)
-symsFromFile = fmap symsFromModule <.> parseFromFile

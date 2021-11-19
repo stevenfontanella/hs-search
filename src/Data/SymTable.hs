@@ -6,4 +6,4 @@ module Data.SymTable (
 import Data.Table
 import Language.Haskell.Exts.SrcLoc
 
-type SymTable = Table FilePath SrcSpanInfo
+type SymTable = Table FilePath [SrcSpanInfo]
