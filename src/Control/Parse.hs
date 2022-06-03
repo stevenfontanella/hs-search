@@ -94,7 +94,22 @@ foldMapMod _ _ = error "foldMapMod: Not a module"
 type Mod = Module SrcSpanInfo
 
 exts :: [Extension]
-exts = map EnableExtension [NamedFieldPuns, TupleSections, CPP, RecordWildCards, ScopedTypeVariables, BangPatterns, MultiParamTypeClasses, ExistentialQuantification, GADTs, LambdaCase, TemplateHaskell]
+exts = map EnableExtension
+    [ NamedFieldPuns
+    , TupleSections
+    , CPP
+    , RecordWildCards
+    , ScopedTypeVariables
+    , BangPatterns
+    , MultiParamTypeClasses
+    , ExistentialQuantification
+    , GADTs
+    , LambdaCase
+    , TemplateHaskell
+    , FlexibleContexts
+    , TypeFamilies
+    , StandaloneDeriving
+    ]
 
 parseFromString :: FilePath -> String -> Either Failure Mod
 parseFromString fname str = case parseModuleWithMode defaultParseMode{parseFilename=fname, extensions=exts, baseLanguage=Haskell2010} str of
